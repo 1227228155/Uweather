@@ -1,6 +1,7 @@
 package cn.ucai.uweather.utils;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,13 +16,14 @@ import cn.ucai.uweather.db.Province;
  */
 
 public class Utility {
-
+    private static final String TAG = "Utility";
     /**
      * 解析和处理服务器返回的省级数据，并保存到数据库中
      * @param response
      * @return
      */
     public static boolean handleProvinceResponse(String response){
+        Log.e(TAG, "handleProvinceResponse---------"+response);
         if (!TextUtils.isEmpty(response)){
             try {
                 JSONArray jsonArray = new JSONArray(response);
@@ -29,7 +31,7 @@ public class Utility {
                     JSONObject jsonObject= jsonArray.getJSONObject(i);
                     Province province = new Province();
                      province.setProvinceName(jsonObject.getString("name"));
-                    province.getPrivonceCode(jsonObject.getInt("id"));
+                    province.setProvinceCode(jsonObject.getInt("id"));
                     province.save();
                 }
                 return true;
@@ -48,6 +50,7 @@ public class Utility {
      * @return
      */
     public static boolean handleCityResponse(String response,int provinceId){
+        Log.e(TAG, "handleCityResponse---" + response);
         if (!TextUtils.isEmpty(response)){
             try {
                 JSONArray jsonArray = new JSONArray(response);
@@ -58,8 +61,8 @@ public class Utility {
                     city.setCityCode(jsonObject.getInt("id"));
                     city.setProvinceId(provinceId);
                     city.save();
-                    return true;
                 }
+                return true;
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -74,6 +77,7 @@ public class Utility {
      * @return
      */
     public static boolean handleCountyResponse(String response,int cityId){
+        Log.e(TAG, "handleCountyResponse---" + response);
         if (!TextUtils.isEmpty(response)){
             try {
                 JSONArray jsonArray = new JSONArray(response);
@@ -84,8 +88,8 @@ public class Utility {
                     county.setCityId(jsonObject.getInt("id"));
                     county.setCityId(cityId);
                     county.save();
-                    return true;
                 }
+                return true;
             } catch (JSONException e) {
                 e.printStackTrace();
             }
