@@ -3,6 +3,8 @@ package cn.ucai.uweather.utils;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.gson.Gson;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,6 +12,7 @@ import org.json.JSONObject;
 import cn.ucai.uweather.db.City;
 import cn.ucai.uweather.db.County;
 import cn.ucai.uweather.db.Province;
+import cn.ucai.uweather.gson.Weather;
 
 /**
  * Created by Administrator on 2017/2/20 0020.
@@ -97,4 +100,24 @@ public class Utility {
         return false;
     }
 
+
+    /**
+     *
+     * 将返回的Json数据解析为Weather类
+     * @param response
+     * @return
+     */
+    public  static Weather handleWeatherResponse(String response){
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray jsonArray = jsonObject.getJSONArray("HeWeather");
+            String weatherContent =jsonArray.getJSONObject(0).toString();
+            Gson gson = new Gson();
+            Weather wea = gson.fromJson(weatherContent, Weather.class);
+            return  wea;
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return  null;
+    }
 }

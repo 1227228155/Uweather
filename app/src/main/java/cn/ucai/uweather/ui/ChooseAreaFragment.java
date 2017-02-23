@@ -2,6 +2,7 @@ package cn.ucai.uweather.ui;
 
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -40,7 +41,6 @@ import okhttp3.Response;
  */
 public class ChooseAreaFragment extends Fragment {
     private static final String TAG = "ChooseAreaFragment";
-    private final String KEY ="&key=90d2c73f5c75480cb6d21e784965864a";
     public static final int LEVEL_PROVINCE = 0;
     public static final int LEVEL_CITY = 1;
     public static final int LEVEL_COUNTY = 2;
@@ -96,6 +96,12 @@ public class ChooseAreaFragment extends Fragment {
                 } else if (currentLevel == LEVEL_CITY) {
                     selectedCity = cityList.get(position);
                     queryCounty();
+                } else if (currentLevel == LEVEL_COUNTY){
+                    String weatherId = countyList.get(position).getCountyName();
+                    Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                    intent.putExtra("weather_id", weatherId);
+                    startActivity(intent);
+                    getActivity().finish();
                 }
             }
         });
