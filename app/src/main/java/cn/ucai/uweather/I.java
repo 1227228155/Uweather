@@ -5,7 +5,12 @@ package cn.ucai.uweather;
  */
 
 public class I {
+    //请求省市级的数据接口
     public static final String REQUEST = "http://guolin.tech/api/china/";
+    //和风天气的key
     public static final String KEY ="&key=90d2c73f5c75480cb6d21e784965864a";
+    //请求天气信息的数据接口
     public static final String WEATHER = "http://guolin.tech/api/weather?cityid=";
+    //获取必应每日一图的接口
+    public static final String BING_PIC = "http://guolin.tech/api/bing_pic";
 }

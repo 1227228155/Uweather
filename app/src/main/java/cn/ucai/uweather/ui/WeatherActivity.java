@@ -1,6 +1,8 @@
 package cn.ucai.uweather.ui;
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -8,10 +10,13 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
 
 import java.io.IOException;
 
@@ -53,11 +58,24 @@ public class WeatherActivity extends AppCompatActivity {
     ScrollView weatherLayout;
     @BindView(R.id.activity_weather)
     FrameLayout activityWeather;
+    @BindView(R.id.bing_pic_img)
+    ImageView bingPicImg;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //实现背景图和状态栏融合到一起的效果，，只有当SDK版本》=21时才会执行里面的代码
+        if (Build.VERSION.SDK_INT>=21){
+            View decorView = getWindow().getDecorView();
+            decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                                             |View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+            //将状态栏设置为透明色
+            getWindow().setStatusBarColor(Color.TRANSPARENT);
+        }
+        //--------------------------------------------------------------------------
+
         setContentView(R.layout.activity_weather);
         ButterKnife.bind(this);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -72,6 +90,41 @@ public class WeatherActivity extends AppCompatActivity {
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(weatherId);
         }
+        String bingPic = sharedPreferences.getString("bing_pic", null);
+        if (bingPic!=null){
+            //缓存有必应图片地址时直接显示
+            Glide.with(this).load(bingPic).into(bingPicImg);
+        }else {
+            //没有缓存下载必应图片并添加到缓存
+            loadBingPic();
+        }
+    }
+
+    /**
+     * 下载必应的每日一图
+     */
+    private void loadBingPic() {
+        String requestBingPic = I.BING_PIC;
+        HttpUtil.sendOKhttpRequest(requestBingPic, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                    final String bingPic = response.body().string();
+                SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
+                editor.putString("bing_pic", bingPic);
+                editor.apply();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Glide.with(WeatherActivity.this).load(bingPic).into(bingPicImg);
+                    }
+                });
+            }
+        });
     }
 
     /**
@@ -147,13 +200,13 @@ public class WeatherActivity extends AppCompatActivity {
             minText.setText(forecast.temperature.min);
             forecastLayout.addView(view);
         }
-        if (weather.aqi!=null){
+        if (weather.aqi != null) {
             aqiText.setText(weather.aqi.city.aqi);
             pm25Text.setText(weather.aqi.city.pm25);
         }
-        String comfort = "舒适度： "+weather.suggestion.comfort.info;
-        String carWash = "洗车指数： "+weather.suggestion.carWash.info;
-        String sport = "运动建议： "+weather.suggestion.sport.info;
+        String comfort = "舒适度： " + weather.suggestion.comfort.info;
+        String carWash = "洗车指数： " + weather.suggestion.carWash.info;
+        String sport = "运动建议： " + weather.suggestion.sport.info;
         comfortText.setText(comfort);
         carWashText.setText(carWash);
         sportText.setText(sport);
