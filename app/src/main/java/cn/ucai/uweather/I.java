@@ -13,4 +13,6 @@ public class I {
     public static final String WEATHER = "http://guolin.tech/api/weather?cityid=";
     //获取必应每日一图的接口
     public static final String BING_PIC = "http://guolin.tech/api/bing_pic";
+    //后台定时更新数据的时间间隔
+    public static final  int UPDATE_TIME = 4*60*60*1000;//4个小时的毫秒数
 }
