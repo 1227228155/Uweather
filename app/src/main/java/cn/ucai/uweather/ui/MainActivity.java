@@ -19,12 +19,13 @@ public class MainActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        addFragment();
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        if (preferences.getString("weather_id",null)!=null){
+        if (preferences.getString("bing_pic",null)!=null){
             Intent intent = new Intent(this, WeatherActivity.class);
             startActivity(intent);
-            finish();
+            this.finish();
+        }else {
+            addFragment();
         }
     }
 

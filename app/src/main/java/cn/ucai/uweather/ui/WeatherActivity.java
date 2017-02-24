@@ -5,7 +5,11 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +26,7 @@ import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import cn.ucai.uweather.I;
 import cn.ucai.uweather.R;
 import cn.ucai.uweather.gson.Forecast;
@@ -32,7 +37,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class WeatherActivity extends AppCompatActivity {
+public class WeatherActivity extends FragmentActivity {
     private static final String TAG = "WeatherActivity";
     @BindView(R.id.title_city)
     TextView titleCity;
@@ -56,10 +61,15 @@ public class WeatherActivity extends AppCompatActivity {
     TextView sportText;
     @BindView(R.id.weather_layout)
     ScrollView weatherLayout;
-    @BindView(R.id.activity_weather)
-    FrameLayout activityWeather;
+
     @BindView(R.id.bing_pic_img)
     ImageView bingPicImg;
+    @BindView(R.id.swipe_refresh)
+    SwipeRefreshLayout swipeRefresh;
+    @BindView(R.id.choose_fragment)
+    FrameLayout chooseFragment;
+    @BindView(R.id.drawer_layout)
+    DrawerLayout drawerLayout;
 
 
     @Override
@@ -67,10 +77,10 @@ public class WeatherActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         //实现背景图和状态栏融合到一起的效果，，只有当SDK版本》=21时才会执行里面的代码
-        if (Build.VERSION.SDK_INT>=21){
+        if (Build.VERSION.SDK_INT >= 21) {
             View decorView = getWindow().getDecorView();
             decorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                                             |View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE);
             //将状态栏设置为透明色
             getWindow().setStatusBarColor(Color.TRANSPARENT);
         }
@@ -78,26 +88,44 @@ public class WeatherActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_weather);
         ButterKnife.bind(this);
+        swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = sharedPreferences.getString("weather", null);
+        final String weatherId;
         if (weatherString != null) {
             //有缓存时直接解析天气数据
             Weather weather = Utility.handleWeatherResponse(weatherString);
+            weatherId = weather.basic.cityName;
             showWeatherInfo(weather);
         } else {
             //没有缓存直接从服务器获取数据
-            String weatherId = getIntent().getStringExtra("weather_id");
+            weatherId = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(weatherId);
         }
         String bingPic = sharedPreferences.getString("bing_pic", null);
-        if (bingPic!=null){
+        if (bingPic != null) {
             //缓存有必应图片地址时直接显示
             Glide.with(this).load(bingPic).into(bingPicImg);
-        }else {
+        } else {
             //没有缓存下载必应图片并添加到缓存
             loadBingPic();
         }
+
+        //下拉刷新
+        swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestWeather(weatherId);
+            }
+        });
+
+    }
+
+    private void addFragment() {
+        ChooseAreaFragment chooseAreaFragment = new ChooseAreaFragment();
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.choose_fragment, chooseAreaFragment).commit();
     }
 
     /**
@@ -113,7 +141,7 @@ public class WeatherActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-                    final String bingPic = response.body().string();
+                final String bingPic = response.body().string();
                 SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
                 editor.putString("bing_pic", bingPic);
                 editor.apply();
@@ -132,7 +160,7 @@ public class WeatherActivity extends AppCompatActivity {
      *
      * @param weatherId
      */
-    private void requestWeather(String weatherId) {
+    public void requestWeather(String weatherId) {
         String weatherUrl = I.WEATHER + weatherId + I.KEY;
         Log.e(TAG, "requestWeather--------------" + weatherUrl);
         HttpUtil.sendOKhttpRequest(weatherUrl, new Callback() {
@@ -143,6 +171,7 @@ public class WeatherActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+                        swipeRefresh.setRefreshing(false);
                     }
                 });
 
@@ -161,7 +190,10 @@ public class WeatherActivity extends AppCompatActivity {
                             editor.putString("weather", responseText);
                             editor.apply();
                             showWeatherInfo(weather);
+                        } else {
+                            Toast.makeText(WeatherActivity.this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
+                        swipeRefresh.setRefreshing(false);
                     }
                 });
             }
@@ -211,5 +243,14 @@ public class WeatherActivity extends AppCompatActivity {
         carWashText.setText(carWash);
         sportText.setText(sport);
         weatherLayout.setVisibility(View.VISIBLE);
+    }
+
+    //点击选择右侧栏城市列表
+    @OnClick(R.id.nav_button)
+    public void onClick() {
+        //添加右侧栏的城市列表
+        drawerLayout.openDrawer(GravityCompat.START);
+
+        addFragment();
     }
 }
