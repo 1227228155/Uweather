@@ -70,6 +70,8 @@ public class WeatherActivity extends FragmentActivity {
     FrameLayout chooseFragment;
     @BindView(R.id.drawer_layout)
     DrawerLayout drawerLayout;
+    @BindView(R.id.now_image)
+    ImageView nowImage;
 
 
     @Override
@@ -142,6 +144,7 @@ public class WeatherActivity extends FragmentActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 final String bingPic = response.body().string();
+                Log.e(TAG, "loadBingPic-----------" + bingPic);
                 SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
                 editor.putString("bing_pic", bingPic);
                 editor.apply();
@@ -211,12 +214,14 @@ public class WeatherActivity extends FragmentActivity {
         String updateTime = weather.basic.update.upodateTime;
         String degree = weather.now.temperature + "℃";
         String weatherInfo = weather.now.more.info;
-
+        String weatherPic = weather.now.more.code;
+        Log.e(TAG, "showWeatherInfo-----------------" + weatherPic);
         titleCity.setText(cityName);
         titleUpdateTime.setText(updateTime);
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
-
+        //设置天气图标
+        addWeatherPic(weatherPic);
         //先移除预报天气布局所有的view
         forecastLayout.removeAllViews();
         for (Forecast forecast :
@@ -243,6 +248,13 @@ public class WeatherActivity extends FragmentActivity {
         carWashText.setText(carWash);
         sportText.setText(sport);
         weatherLayout.setVisibility(View.VISIBLE);
+    }
+
+    private void addWeatherPic(String weatherPic) {
+        String url = I.WEATHER_PIC + weatherPic+".png";
+        Log.e(TAG, "addWeatherPic----------" + url);
+        Glide.with(WeatherActivity.this).load(url).into(nowImage);
+
     }
 
     //点击选择右侧栏城市列表

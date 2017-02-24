@@ -15,4 +15,6 @@ public class I {
     public static final String BING_PIC = "http://guolin.tech/api/bing_pic";
     //后台定时更新数据的时间间隔
     public static final  int UPDATE_TIME = 4*60*60*1000;//4个小时的毫秒数
+    //请求和风天气状况对应的图标
+    public static final String WEATHER_PIC = "http://files.heweather.com/cond_icon/";
 }
