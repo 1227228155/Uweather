@@ -25,13 +25,16 @@ public class MainActivity extends FragmentActivity {
             startActivity(intent);
             this.finish();
         }else {
-            addFragment();
+            Amap();
         }
     }
 
-    private void addFragment() {
+
+
+    private void Amap() {
         chooseAreaFragment = new ChooseAreaFragment();
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.frameLayout, chooseAreaFragment).commit();
+
     }
 }

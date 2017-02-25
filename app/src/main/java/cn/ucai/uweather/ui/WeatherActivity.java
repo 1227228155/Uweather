@@ -72,7 +72,7 @@ public class WeatherActivity extends FragmentActivity {
     DrawerLayout drawerLayout;
     @BindView(R.id.now_image)
     ImageView nowImage;
-
+    String weatherId2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,19 +91,19 @@ public class WeatherActivity extends FragmentActivity {
         setContentView(R.layout.activity_weather);
         ButterKnife.bind(this);
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary);
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString = sharedPreferences.getString("weather", null);
-        final String weatherId;
+
         if (weatherString != null) {
             //有缓存时直接解析天气数据
             Weather weather = Utility.handleWeatherResponse(weatherString);
-            weatherId = weather.basic.cityName;
+        //    weatherId = weather.basic.cityName;
             showWeatherInfo(weather);
         } else {
             //没有缓存直接从服务器获取数据
-            weatherId = getIntent().getStringExtra("weather_id");
+            weatherId2= getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
-            requestWeather(weatherId);
+            requestWeather(weatherId2);
         }
         String bingPic = sharedPreferences.getString("bing_pic", null);
         if (bingPic != null) {
@@ -118,7 +118,9 @@ public class WeatherActivity extends FragmentActivity {
         swipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                requestWeather(weatherId);
+                String weatherString = sharedPreferences.getString("weather", null);
+                Weather weather2 = Utility.handleWeatherResponse(weatherString);
+                requestWeather(weather2.basic.cityName);
             }
         });
 
@@ -164,6 +166,7 @@ public class WeatherActivity extends FragmentActivity {
      * @param weatherId
      */
     public void requestWeather(String weatherId) {
+        Log.e(TAG, "requestWeather.weatherId==========" + weatherId);
         String weatherUrl = I.WEATHER + weatherId + I.KEY;
         Log.e(TAG, "requestWeather--------------" + weatherUrl);
         HttpUtil.sendOKhttpRequest(weatherUrl, new Callback() {
