@@ -73,6 +73,8 @@ public class WeatherActivity extends FragmentActivity {
     @BindView(R.id.now_image)
     ImageView nowImage;
     String weatherId2;
+    @BindView(R.id.qlty_text)
+    TextView qltyText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,11 +99,11 @@ public class WeatherActivity extends FragmentActivity {
         if (weatherString != null) {
             //有缓存时直接解析天气数据
             Weather weather = Utility.handleWeatherResponse(weatherString);
-        //    weatherId = weather.basic.cityName;
+            //    weatherId = weather.basic.cityName;
             showWeatherInfo(weather);
         } else {
             //没有缓存直接从服务器获取数据
-            weatherId2= getIntent().getStringExtra("weather_id");
+            weatherId2 = getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
             requestWeather(weatherId2);
         }
@@ -218,11 +220,13 @@ public class WeatherActivity extends FragmentActivity {
         String degree = weather.now.temperature + "℃";
         String weatherInfo = weather.now.more.info;
         String weatherPic = weather.now.more.code;
+
         Log.e(TAG, "showWeatherInfo-----------------" + weatherPic);
         titleCity.setText(cityName);
         titleUpdateTime.setText(updateTime);
         degreeText.setText(degree);
         weatherInfoText.setText(weatherInfo);
+
         //设置天气图标
         addWeatherPic(weatherPic);
         //先移除预报天气布局所有的view
@@ -232,8 +236,8 @@ public class WeatherActivity extends FragmentActivity {
             View view = LayoutInflater.from(this).inflate(R.layout.forecast_item, forecastLayout, false);
             TextView dateText = (TextView) view.findViewById(R.id.date_text);
             TextView infoText = (TextView) view.findViewById(R.id.info_text);
-            TextView maxText = (TextView) view.findViewById(R.id.max_text);
-            TextView minText = (TextView) view.findViewById(R.id.min_text);
+            TextView maxText = (TextView) view.findViewById(R.id.min_text);
+            TextView minText = (TextView) view.findViewById(R.id.max_text);
             dateText.setText(forecast.date);
             infoText.setText(forecast.more.info);
             maxText.setText(forecast.temperature.max);
@@ -243,6 +247,7 @@ public class WeatherActivity extends FragmentActivity {
         if (weather.aqi != null) {
             aqiText.setText(weather.aqi.city.aqi);
             pm25Text.setText(weather.aqi.city.pm25);
+            qltyText.setText( weather.aqi.city.qlty);
         }
         String comfort = "舒适度： " + weather.suggestion.comfort.info;
         String carWash = "洗车指数： " + weather.suggestion.carWash.info;
@@ -254,7 +259,7 @@ public class WeatherActivity extends FragmentActivity {
     }
 
     private void addWeatherPic(String weatherPic) {
-        String url = I.WEATHER_PIC + weatherPic+".png";
+        String url = I.WEATHER_PIC + weatherPic + ".png";
         Log.e(TAG, "addWeatherPic----------" + url);
         Glide.with(WeatherActivity.this).load(url).into(nowImage);
 
