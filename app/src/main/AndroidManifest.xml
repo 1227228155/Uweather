@@ -5,7 +5,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
 
-
     <application
         android:name="org.litepal.LitePalApplication"
         android:allowBackup="true"
@@ -26,7 +25,15 @@
             android:name=".service.AutoUpdateService"
             android:enabled="true"
             android:exported="true" />
+        <service android:name="com.amap.api.location.APSService" />
 
+        <meta-data
+            android:name="com.amap.api.v2.apikey"
+            android:value="7b3f05c8d08e48e6c04cac40262f5fa1">
+            //开发者申请的key</meta-data>
+
+        <activity android:name=".AMap.LocationActivity" />
+        <activity android:name=".AMap.CheckPermissionsActivity"></activity>
     </application>
 
 </manifest>
